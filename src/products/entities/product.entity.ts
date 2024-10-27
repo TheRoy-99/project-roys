@@ -7,7 +7,7 @@ export class Product extends Document {
     @Prop({ type: Types.ObjectId, ref: 'User', required: true })
     idClient: Types.ObjectId;
 
-    @Prop({ required: true })
+    @Prop({ required: true, unique: true })
     serial: string;
 
     @Prop({ required: true })

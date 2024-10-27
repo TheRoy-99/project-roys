@@ -15,22 +15,24 @@ export class ProductsService {
     private readonly usersService: UsersService,
   ) { }
 
-  create(createProductDto: CreateProductDto): Promise<Product> {
+  async create(createProductDto: CreateProductDto): Promise<Product> {
     try {
       if (!Types.ObjectId.isValid(createProductDto.idClient)) {
         throw new BadRequestException('Formato de ID de cliente no válido');
       }
-
-      const user = this.usersService.findOne(createProductDto.idClient.toString());
+      const user = await this.usersService.findOne(createProductDto.idClient.toString());
       if (!user) {
         throw new BadRequestException('El cliente no existe');
       }
-
       const createdProduct = new this.productModel(createProductDto);
-      return createdProduct.save();
+      return await createdProduct.save();
     } catch (error) {
       console.error('Error al crear el producto:', error);
 
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+  
       if (error instanceof mongoose.Error.ValidationError) {
         throw new BadRequestException('Datos inválidos: ' + error.message);
       }
@@ -42,7 +44,7 @@ export class ProductsService {
     return this.productModel.find();
   }
 
-  findOne(id: string): Promise<Product> {
+  findOne(id: string): Promise<Product| null> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Formato de ID no válido');
     }
